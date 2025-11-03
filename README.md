@@ -2,7 +2,7 @@
 
 # Flask + MySQL Docker Example
 
-This is a simple example Flask application using MySQL as the database, containerized with Docker Compose.
+This is a simple example Flask aapplication using MySQL as the database, containerized with Docker Compose.
 
 ## Features
 - REST API with Flask (Python)
