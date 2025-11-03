@@ -17,30 +17,46 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'docker-compose build'
+                echo '🔧 Building Docker images...'
+                // Retry 3 times if Docker Hub times out
+                retry(3) {
+                    sh '''
+                        echo "⏳ Running docker-compose build..."
+                        docker-compose build --progress=plain || (echo "⚠️ Build failed, retrying in 5s..." && sleep 5 && false)
+                    '''
+                }
             }
         }
 
         stage('Test') {
             steps {
-                sh 'docker-compose up -d'
-                sh 'sleep 15'
-                sh 'curl --fail http://localhost:5001/ || (docker-compose logs && exit 1)'
+                echo '🧪 Running container tests...'
+                sh '''
+                    docker-compose up -d
+                    echo "⏳ Waiting for containers to initialize..."
+                    sleep 15
+                    curl --fail http://localhost:5001/ || (docker-compose logs && exit 1)
+                '''
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
                 script {
-                    sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-                    sh 'docker build -t $DOCKER_IMAGE:latest .'
-                    sh 'docker push $DOCKER_IMAGE:latest'
+                    echo '📦 Pushing image to Docker Hub...'
+                    sh '''
+                        echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
+                        docker build -t $DOCKER_IMAGE:latest .
+                        docker push $DOCKER_IMAGE:latest
+                        docker logout
+                    '''
                 }
             }
         }
 
         stage('Cleanup') {
             steps {
+                echo '🧹 Cleaning up containers and volumes...'
                 sh 'docker-compose down -v'
             }
         }
