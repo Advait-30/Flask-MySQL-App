@@ -5,6 +5,7 @@ pipeline {
         DOCKER_HOST = 'unix:///Users/aathreya/.docker/run/docker.sock'
         DOCKER_TLS_VERIFY = ''
         DOCKER_CERT_PATH = ''
+        DOCKER_API_VERSION = '1.43'
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
     }
 
@@ -22,6 +23,7 @@ pipeline {
                 echo '🔧 Building Docker images...'
                 retry(3) {
                     sh '''
+                        export DOCKER_API_VERSION=$DOCKER_API_VERSION
                         echo "⏳ Running docker-compose build..."
                         docker-compose build || { 
                             echo "⚠️ Build failed, retrying in 5s..."; 
@@ -37,6 +39,7 @@ pipeline {
             steps {
                 echo '🧪 Running containers and tests...'
                 sh '''
+                    export DOCKER_API_VERSION=$DOCKER_API_VERSION
                     docker-compose up -d
                     echo "⏳ Waiting for services to start..."
                     sleep 15
@@ -50,6 +53,7 @@ pipeline {
                 echo '📤 Pushing Docker image to Docker Hub...'
                 script {
                     sh '''
+                        export DOCKER_API_VERSION=$DOCKER_API_VERSION
                         echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin
                         docker build -t $DOCKERHUB_CREDENTIALS_USR/flask-mysql-app:latest .
                         docker push $DOCKERHUB_CREDENTIALS_USR/flask-mysql-app:latest
@@ -62,6 +66,7 @@ pipeline {
             steps {
                 echo '🧹 Cleaning up containers and images...'
                 sh '''
+                    export DOCKER_API_VERSION=$DOCKER_API_VERSION
                     docker-compose down -v || true
                     docker rmi $DOCKERHUB_CREDENTIALS_USR/flask-mysql-app:latest || true
                 '''
