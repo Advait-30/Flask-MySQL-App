@@ -2,12 +2,9 @@ pipeline {
     agent any
 
     environment {
-        // Docker environment (so Jenkins uses your local Docker)
-        DOCKER_HOST = 'unix:///Users/aathreya/.docker/run/docker.sock'
-        DOCKER_TLS_VERIFY = '0'
-
-        // DockerHub credentials (already created in Jenkins)
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
+    DOCKER_HOST = 'unix:///Users/aathreya/.docker/run/docker.sock'
+    DOCKER_TLS_VERIFY = '0'
+    DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
     }
 
     stages {
