@@ -14,7 +14,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 echo '📦 Cloning GitHub repository...'
-                git branch: 'main', url: 'https://github.com/aathreya-sharma/flask-mysql-app.git'
+                git branch: 'main', url: 'https://github.com/Advait-30/Flask-MySQL-App.git'
             }
         }
 
